@@ -10,18 +10,6 @@ import {
 import { ScanLine } from "lucide-react";
 
 export const Route = createFileRoute("/detection")({
-  head: () => ({
-    meta: [
-      {
-        title: "Disease Detection — Crop Doctor AI",
-      },
-      {
-        name: "description",
-        content:
-          "Upload a leaf image to identify crop diseases and get treatment recommendations.",
-      },
-    ],
-  }),
   component: DetectionPage,
 });
 
@@ -31,7 +19,6 @@ function DetectionPage() {
 
   async function analyze(file: File) {
     setLoading(true);
-    setResult(null);
 
     try {
       const response = await analyzeLeafImage(file);
@@ -45,14 +32,13 @@ function DetectionPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <header className="flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <ScanLine className="h-7 w-7" />
         </div>
 
         <div>
-          <h1 className="font-display text-3xl font-bold">
+          <h1 className="text-3xl font-bold">
             Disease Detection
           </h1>
 
@@ -62,15 +48,12 @@ function DetectionPage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Upload Section */}
+      <div className="grid lg:grid-cols-2 gap-6">
         <UploadCard
           onAnalyze={analyze}
           loading={loading}
         />
 
-        {/* Result Section */}
         <div>
           {loading ? (
             <div className="glass-card rounded-3xl p-10">
@@ -84,14 +67,12 @@ function DetectionPage() {
                 <ScanLine className="h-8 w-8" />
               </div>
 
-              <h3 className="font-display text-lg font-semibold">
+              <h3 className="text-lg font-semibold">
                 No diagnosis yet
               </h3>
 
               <p className="text-sm text-muted-foreground mt-2 max-w-xs">
-                Upload a clear photo of an affected crop leaf.
-                Use natural lighting and make sure the leaf
-                fills most of the image for best accuracy.
+                Upload a clear crop leaf image to begin analysis.
               </p>
             </div>
           )}
@@ -100,5 +81,3 @@ function DetectionPage() {
     </div>
   );
 }
-
-export default DetectionPage;
