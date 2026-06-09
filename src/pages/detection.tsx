@@ -1,30 +1,76 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { UploadCard } from "@/components/UploadCard";
 import { ResultCard } from "@/components/ResultCard";
 import { Loader } from "@/components/Loader";
-import {
-  analyzeLeafImage,
-  type DiseaseResult,
-} from "@/services/cropService";
 import { ScanLine } from "lucide-react";
 
-export const Route = createFileRoute("/detection")({
-  component: DetectionPage,
-});
+type DiseaseResult = {
+  crop: string;
+  disease: string;
+  confidence: number;
+  severity: "Low" | "Moderate" | "High";
+  symptoms: string[];
+  treatment: string[];
+  prevention: string[];
+};
 
-function DetectionPage() {
+// Mock Disease Detection Service
+async function analyzeLeafImage(
+  _file: File
+): Promise<DiseaseResult> {
+  await new Promise((resolve) =>
+    setTimeout(resolve, 1800)
+  );
+
+  return {
+    crop: "Tomato",
+    disease: "Early Blight (Alternaria solani)",
+    confidence: 0.94,
+    severity: "Moderate",
+
+    symptoms: [
+      "Concentric brown rings on lower leaves",
+      "Yellow halo surrounding dark lesions",
+      "Premature leaf drop reducing yield",
+    ],
+
+    treatment: [
+      "Apply Mancozeb 75% WP @ 2g/L every 10 days",
+      "Remove and burn infected leaves immediately",
+      "Spray neem oil (5ml/L) as an organic alternative",
+    ],
+
+    prevention: [
+      "Use certified disease-free seeds",
+      "Maintain 60cm row spacing for airflow",
+      "Rotate crops with cereals every 2 seasons",
+    ],
+  };
+}
+
+export default function DetectionPage() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<DiseaseResult | null>(null);
+
+  const [result, setResult] =
+    useState<DiseaseResult | null>(null);
 
   async function analyze(file: File) {
     setLoading(true);
 
     try {
       const response = await analyzeLeafImage(file);
+
+      console.log(
+        "Detection Result:",
+        response
+      );
+
       setResult(response);
     } catch (error) {
-      console.error("Analysis Error:", error);
+      console.error(
+        "Analysis Error:",
+        error
+      );
     } finally {
       setLoading(false);
     }
@@ -32,22 +78,25 @@ function DetectionPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <header className="flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <ScanLine className="h-7 w-7" />
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="font-display text-3xl font-bold">
             Disease Detection
           </h1>
 
           <p className="text-muted-foreground">
-            Upload a crop leaf image and get AI-powered disease diagnosis.
+            Upload a crop leaf image and get
+            AI-powered disease diagnosis.
           </p>
         </div>
       </header>
 
+      {/* Main Content */}
       <div className="grid lg:grid-cols-2 gap-6">
         <UploadCard
           onAnalyze={analyze}
@@ -67,12 +116,15 @@ function DetectionPage() {
                 <ScanLine className="h-8 w-8" />
               </div>
 
-              <h3 className="text-lg font-semibold">
+              <h3 className="font-display text-lg font-semibold">
                 No diagnosis yet
               </h3>
 
               <p className="text-sm text-muted-foreground mt-2 max-w-xs">
-                Upload a clear crop leaf image to begin analysis.
+                Upload a clear crop leaf image to begin
+                analysis. Make sure the affected leaf
+                fills most of the frame and is captured
+                in good lighting.
               </p>
             </div>
           )}
