@@ -27,7 +27,9 @@ export function createAnalyzeRouter({ config, analyzeImage }) {
         new HttpError(
           503,
           "AI_NOT_CONFIGURED",
-          "Set GEMINI_API_KEY in the backend .env file and restart npm run dev:api.",
+          config.isVercel
+            ? "Set GEMINI_API_KEY in this Vercel project's server-side environment variables and redeploy."
+            : "Set GEMINI_API_KEY in the backend .env file and restart npm run dev.",
         ),
       );
     if (!req.is("multipart/form-data"))
@@ -93,6 +95,12 @@ export function createAnalyzeRouter({ config, analyzeImage }) {
         });
     });
     req.once("aborted", release);
+  });
+  router.all("/analyze-crop", (_req, res) => {
+    res.set("Allow", "POST, OPTIONS").status(405).json({
+      error: "Use POST with one multipart image file in the image field.",
+      code: "METHOD_NOT_ALLOWED",
+    });
   });
   return router;
 }

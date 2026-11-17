@@ -75,9 +75,9 @@ test("invalid upload, missing key, and retry never show a fake report", async ({
   await page.getByLabel("Choose crop image", { exact: true }).setInputFiles({
     name: "huge.png",
     mimeType: "image/png",
-    buffer: Buffer.alloc(10 * 1024 * 1024 + 1),
+    buffer: Buffer.alloc(4 * 1024 * 1024 + 1),
   });
-  await expect(page.getByRole("alert")).toContainText("10 MB");
+  await expect(page.getByRole("alert")).toContainText("4 MB");
   await expect(page.getByRole("article")).toHaveCount(0);
   expect(calls).toBe(0);
   await selectImage(page);
@@ -155,6 +155,17 @@ test("camera input shares the same preview and analysis workflow", async ({ page
   await expect(page.getByAltText("Selected crop for analysis")).toBeVisible();
   await page.getByRole("button", { name: "Analyze image", exact: true }).click();
   await expect(page.getByRole("article")).toContainText("Rice");
+});
+
+test("a platform upload rejection explains the production size limit", async ({ page }) => {
+  await page.route("**/api/analyze-crop", (route) =>
+    route.fulfill({ status: 413, contentType: "text/plain", body: "FUNCTION_PAYLOAD_TOO_LARGE" }),
+  );
+  await page.goto("/detection");
+  await selectImage(page);
+  await page.getByRole("button", { name: "Analyze image", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("4 MB");
+  await expect(page.getByRole("article")).toHaveCount(0);
 });
 
 test("offline proxy and wrong frontend responses explain how to start both servers", async ({

@@ -1,0 +1,8 @@
+.git
+.env
+.env.*
+test-results
+playwright-report
+local-test-images
+tests
+server/tests

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AnalysisSchema } from "../../shared/cropAnalysis.js";
+import { AnalysisSchema, IMAGE_SIZE_ERROR } from "../../shared/cropAnalysis.js";
 import { validateImage } from "./imageValidation";
 
 export type DiseaseResult = z.infer<typeof AnalysisSchema>;
@@ -20,8 +20,11 @@ export async function analyzeLeafImage(file: File, signal?: AbortSignal): Promis
       signal: controller.signal,
     });
     if (!response.headers.get("content-type")?.includes("application/json")) {
+      if (response.status === 413) throw new Error(IMAGE_SIZE_ERROR);
       throw new Error(
-        "The crop API is not connected to this page. Stop this project's old dev server and run npm run dev to start both servers, then open the CropDoctor URL printed in that terminal.",
+        import.meta.env.DEV
+          ? "The crop API is not connected to this page. Run npm run dev to start both servers and open the printed CropDoctor URL."
+          : "The crop API is not deployed correctly. Check the Vercel API Function and /api rewrites, then redeploy.",
       );
     }
     const data: unknown = await response.json().catch(() => null);
@@ -29,7 +32,7 @@ export async function analyzeLeafImage(file: File, signal?: AbortSignal): Promis
       const error =
         data && typeof data === "object" && "error" in data && typeof data.error === "string"
           ? data.error
-          : "The crop API could not complete this request. Restart CropDoctor with npm run dev, then retry.";
+          : "The crop API could not complete this request. Please retry or check the API deployment logs.";
       throw new Error(error);
     }
     const parsed = AnalysisSchema.safeParse(data);
@@ -40,7 +43,9 @@ export async function analyzeLeafImage(file: File, signal?: AbortSignal): Promis
     if (controller.signal.aborted) throw new Error("Analysis timed out. Please retry.");
     if (error instanceof TypeError)
       throw new Error(
-        "Cannot connect to the crop API. Run npm run dev to start the frontend and backend together, then open the printed CropDoctor URL.",
+        import.meta.env.DEV
+          ? "Cannot connect to the crop API. Run npm run dev to start both servers, then open the printed CropDoctor URL."
+          : "Cannot connect to the crop API. Check your connection and retry. If this persists, check the Vercel Function logs.",
       );
     throw error;
   } finally {

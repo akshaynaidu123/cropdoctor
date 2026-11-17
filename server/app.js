@@ -5,29 +5,38 @@ import { rateLimit } from "express-rate-limit";
 import { createAnalyzeRouter } from "./routes/analyze.js";
 import { createVisionService } from "./services/visionService.js";
 import { HttpError } from "./errors.js";
+import { IMAGE_SIZE_ERROR } from "../shared/cropAnalysis.js";
 
 export function createApp({ config, analyzeImage = createVisionService(config) }) {
   const app = express();
   app.disable("x-powered-by");
+  // Trust the Vercel edge's forwarded client IP, not arbitrary local proxies.
+  if (config.isVercel) app.set("trust proxy", 1);
   app.use((_req, res, next) => {
     res.set({ "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
     next();
   });
   app.use(
-    cors({
-      origin(origin, done) {
-        if (!origin || config.origins.includes(origin)) return done(null, true);
-        done(
+    cors((req, done) => {
+      const origin = req.get("origin");
+      // A browser cannot forge Host. Permit its exact same-origin request, including
+      // custom domains and preview aliases, without permitting arbitrary *.vercel.app.
+      const sameOrigin = origin === `${req.protocol}://${req.get("host")}`;
+      if (origin && !sameOrigin && !config.origins.includes(origin)) {
+        return done(
           new HttpError(
             403,
             "ORIGIN_NOT_ALLOWED",
             "This frontend origin is not allowed by the API.",
           ),
         );
-      },
-      methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type"],
-      credentials: false,
+      }
+      done(null, {
+        origin: origin || false,
+        methods: ["GET", "POST", "OPTIONS"],
+        allowedHeaders: ["Content-Type"],
+        credentials: false,
+      });
     }),
   );
   app.get("/api/health", (_req, res) => res.json({ ok: true, configured: Boolean(config.apiKey) }));
@@ -61,7 +70,7 @@ export function createApp({ config, analyzeImage = createVisionService(config) }
       return res.status(tooLarge ? 413 : 400).json({
         code: tooLarge ? "IMAGE_TOO_LARGE" : "INVALID_UPLOAD",
         error: tooLarge
-          ? "Maximum image size is 10 MB."
+          ? IMAGE_SIZE_ERROR
           : "Upload exactly one image file in the image field, with no extra fields.",
       });
     }

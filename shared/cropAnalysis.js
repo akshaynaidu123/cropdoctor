@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+// Leave room for multipart headers below Vercel's 4.5 MB request limit.
+export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+export const IMAGE_SIZE_ERROR = "Maximum image size is 4 MB. Choose a smaller image.";
 export const IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp";
 const text = z.string().min(1).max(1500);

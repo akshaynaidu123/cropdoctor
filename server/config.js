@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { fileURLToPath } from "node:url";
 
 export function loadConfig(env = process.env) {
-  if (env === process.env)
+  if (env === process.env && env.VERCEL !== "1" && env.NODE_ENV !== "production")
     dotenv.config({ path: fileURLToPath(new URL("../.env", import.meta.url)), quiet: true });
   const rawKey = env.GEMINI_API_KEY?.trim();
   const apiKey = rawKey && !/^(your_|replace_|<)/i.test(rawKey) ? rawKey : "";
@@ -13,6 +13,11 @@ export function loadConfig(env = process.env) {
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+  if (env.VERCEL === "1") {
+    for (const name of ["VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"]) {
+      if (env[name]) origins.push(`https://${env[name]}`);
+    }
+  }
   for (const origin of origins) {
     const url = new URL(origin);
     if (!["http:", "https:"].includes(url.protocol) || url.origin !== origin)
@@ -25,6 +30,7 @@ export function loadConfig(env = process.env) {
     model: (env.GEMINI_MODEL || "gemini-3.5-flash-lite").replace(/^models\//, ""),
     host: env.HOST || "127.0.0.1",
     port,
-    origins,
+    origins: [...new Set(origins)],
+    isVercel: env.VERCEL === "1",
   };
 }

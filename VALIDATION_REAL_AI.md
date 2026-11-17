@@ -1,6 +1,6 @@
 # Gemini migration validation — 17 November 2026
 
-Environment: Windows PowerShell, Node 22.18.0, npm 11.6.2. Model: `gemini-3.5-flash-lite`. Provider: Gemini Developer API through official `@google/genai` 3.4.0. This checkout has no `.git` directory; Git diff/status comparison was unavailable.
+Environment: Windows PowerShell, Node 22.18.0, npm 11.6.2. Model: `gemini-3.5-flash-lite`. Provider: Gemini Developer API through official `@google/genai` 3.4.0. The original migration predates Git setup; the current Vercel-fix checkout is linked to the requested main branch.
 
 ## Executed checks
 
@@ -60,3 +60,26 @@ The selected model is listed by Google with a free tier, but model listing canno
 Physical mobile camera hardware/permission prompts and publicly hosted deployment were not exercised. Existing assistant/weather demonstration services remain outside this migration. Reports are preliminary visual assessments requiring expert confirmation.
 
 See `SETUP_REAL_AI.md` for exact PowerShell startup commands, model configuration, troubleshooting, and the complete migration file inventory.
+
+## Vercel deployment fix
+
+The current checkout is on `main`, connected to `https://github.com/akshaynaidu123/cropdoctor.git`. At inspection, the deployed `/api/health` and `/api/analyze-crop` both returned React HTML with HTTP 200, confirming the SPA fallback swallowed API requests.
+
+The fix adds a root `api/index.js` default Express export with no listener, API-first rewrites, Vite/dist settings, Node 22, runtime-only credentials, exact same-origin/deployment CORS, a shared 4 MiB upload cap, and a 45-second Gemini timeout within a 60-second Function. UI layout and the report contract are preserved.
+
+| Additional validation | Result |
+| --- | --- |
+| Backend/SDK/startup/Function suite | 22 passed |
+| Desktop/mobile browser suite | 20 passed |
+| TypeScript and backend syntax checks | Passed |
+| Vercel CLI production build | Passed; generated static frontend and `api/index` Node 22 Function with API-before-SPA routing |
+| Local Function artifact inspection | About 25.1 MiB uncompressed; no .env files bundled; duration 60 seconds |
+| Vercel local runtime health and unknown API | JSON 200 and JSON 404 |
+| Vercel local runtime upload validation | Disguised image rejected with 415; oversized image rejected with 413 |
+| Actual image through Vercel local runtime and Gemini | HTTP 200, maize, possible corn rust; no mock provider was used |
+
+Production variable names `GEMINI_API_KEY` and `GEMINI_MODEL` were listed by Vercel, while the local production pull returned empty values. Verify actual values and `configured: true` after redeployment. No remote environment changes, commit, push, or production deployment were performed.
+
+The Vercel local runtime test used the actual API rewrite/Function adapter and a separate local frontend launcher to avoid the existing combined development script. The temporary launcher and Vercel artifacts are ignored. This verifies local Function routing and multipart behavior, not the future deployed Linux environment or its Gemini quota.
+
+See `VERCEL_DEPLOYMENT.md` for the complete file staging/commit/push commands, dashboard settings, resource constraints, and mandatory live health plus real-image POST checks. Do not claim production success until those checks pass after the new commit is deployed.

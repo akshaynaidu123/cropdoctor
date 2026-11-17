@@ -4,7 +4,7 @@ CropDoctor keeps its existing React/TypeScript/Vite interface, navigation, uploa
 
 ## Start in VS Code PowerShell
 
-Requirements: Node.js 22.12+ (tested with 22.18), npm, and a Gemini Developer API key from [Google AI Studio](https://aistudio.google.com/api-keys).
+Requirements: Node.js 22.x, version 22.12+ (tested with 22.18), npm, and a Gemini Developer API key from [Google AI Studio](https://aistudio.google.com/api-keys).
 
 ```powershell
 Set-Location 'D:\AKSHAY\UPSC\cropdoctor-main'
@@ -69,9 +69,9 @@ Gallery / native mobile camera
   -> existing frontend report or a useful error
 ```
 
-JPG/JPEG, PNG, and WebP uploads are accepted up to **10 MB** and **25 megapixels**. File contents must match the declared MIME type. Damaged and animated files are rejected. Valid images are decoded in memory and normalized to JPEG before Gemini receives them; inline MIME type is therefore `image/jpeg`, matching those actual normalized bytes. Original filenames and metadata are not forwarded to the model. Uploaded files are not saved or logged.
+JPG/JPEG, PNG, and WebP uploads are accepted up to **4 MiB** and **25 megapixels**. File contents must match the declared MIME type. Damaged and animated files are rejected. Valid images are decoded in memory and normalized to JPEG before Gemini receives them; inline MIME type is therefore `image/jpeg`, matching those actual normalized bytes. Original filenames and metadata are not forwarded to the model. Uploaded files are not saved or logged.
 
-The Google SDK is explicitly configured for the Gemini Developer API, not Vertex AI, with the official Google endpoint, a 60-second timeout, and one attempt. The browser has a 75-second timeout. Abort signals propagate when a request is cancelled. Local limits remain 10 requests/minute/IP and two concurrent analyses. No raw SDK errors, credentials, or complete image contents are logged.
+The Google SDK is explicitly configured for the Gemini Developer API, not Vertex AI, with the official Google endpoint, a 45-second timeout, and one attempt. The browser has a 75-second timeout. Abort signals propagate when a request is cancelled. Local limits remain 10 requests/minute/IP and two concurrent analyses. No raw SDK errors, credentials, or complete image contents are logged.
 
 ## Report and prompt behavior
 
@@ -139,7 +139,7 @@ If `npm install` reports `Invalid Version:` with an empty version, check for an 
 
 Run `npm run dev` for the local evaluation. Demonstrate healthy, diseased, and different-crop photos; show evidence and qualitative uncertainty, preview/reset, invalid-upload errors, and the mobile layout. Keep AI Studio quota available for the presentation. Do not claim a confirmed diagnosis.
 
-`npm run build` emits `dist`. `npm run start:api` runs Express. Static-only hosting and the current `vercel.json` SPA rewrite do not host the API; a public deployment needs a Node backend or equivalent routing for `/api`, TLS, exact origins, and backend secrets. Use authentication before exposing an unrestricted quota-bearing API publicly. For `npm run preview` on port 4173, run the API separately and add its exact frontend origin to `FRONTEND_ORIGIN`.
+For Vercel, api/index.js exports the Express app as a Node Function, and vercel.json routes API requests before the React fallback. Follow VERCEL_DEPLOYMENT.md for server-side environment variables, exact Git commands, platform limits, and live verification. Other static-only hosts still need an API host. For local built-frontend preview, run the API separately and allow the preview origin.
 
 The original assistant and weather pages retain their demonstration services; only crop-image analysis was migrated. Existing styling/layouts are unchanged apart from provider wording. The original OpenAI provider calls and environment dependencies are removed, along with unused `openai`, `@ai-sdk/openai-compatible`, and `ai` packages after verifying there were no other imports.
 

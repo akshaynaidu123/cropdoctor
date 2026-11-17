@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { IMAGE_MIME_TYPES, MAX_IMAGE_BYTES } from "../../shared/cropAnalysis.js";
+import { IMAGE_MIME_TYPES, MAX_IMAGE_BYTES, IMAGE_SIZE_ERROR } from "../../shared/cropAnalysis.js";
 import { HttpError } from "../errors.js";
 
 function signatureType(buffer) {
@@ -20,7 +20,7 @@ export async function prepareImage(file) {
   if (!file?.buffer?.length)
     throw new HttpError(400, "IMAGE_REQUIRED", "Upload a non-empty image in the image field.");
   if (file.buffer.length > MAX_IMAGE_BYTES)
-    throw new HttpError(413, "IMAGE_TOO_LARGE", "Maximum image size is 10 MB.");
+    throw new HttpError(413, "IMAGE_TOO_LARGE", IMAGE_SIZE_ERROR);
   if (!IMAGE_MIME_TYPES.includes(file.mimetype) || signatureType(file.buffer) !== file.mimetype)
     throw new HttpError(
       415,

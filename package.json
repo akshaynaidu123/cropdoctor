@@ -14,14 +14,14 @@
     "dev:api": "node server/index.js",
     "start:api": "node server/index.js",
     "typecheck": "tsc --noEmit",
-    "check:server": "node --check server/index.js && node --check server/app.js && node --check server/config.js && node --check server/errors.js && node --check server/routes/analyze.js && node --check server/services/visionService.js && node --check server/services/imageService.js && node --check shared/cropAnalysis.js",
+    "check:server": "node --check api/index.js && node --check server/index.js && node --check server/app.js && node --check server/config.js && node --check server/errors.js && node --check server/routes/analyze.js && node --check server/services/visionService.js && node --check server/services/imageService.js && node --check shared/cropAnalysis.js",
     "test": "node --test server/tests/*.test.js",
     "test:e2e": "playwright test --config=playwright.config.js",
     "test:live": "node scripts/test-live-ai.js",
     "models:gemini": "node scripts/list-gemini-models.js"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": "22.x"
   },
   "dependencies": {
     "@google/genai": "^3.4.0",
