@@ -1,116 +1,133 @@
-import { Leaf, Activity, Pill, ShieldCheck } from "lucide-react";
+import { Leaf, Activity, Pill, ShieldCheck, Search, type LucideIcon } from "lucide-react";
 import type { DiseaseResult } from "@/services/cropService";
 import { useLanguage } from "@/context/LanguageContext";
 
-export function ResultCard({
-  result,
-}: {
-  result: DiseaseResult;
-}) {
+const STATUS_LABELS = {
+  healthy: "No obvious disease visible",
+  diseased: "Possible disease or stress",
+  uncertain: "Unable to assess reliably",
+  unsupported: "Image not supported",
+};
+
+export function ResultCard({ result }: { result: DiseaseResult }) {
   const { t } = useLanguage();
-
   const severityColor =
-    result.severity === "High"
+    result.severity === "severe"
       ? "bg-red-100 text-red-700"
-      : result.severity === "Moderate"
-      ? "bg-yellow-100 text-yellow-700"
-      : "bg-green-100 text-green-700";
-
+      : result.severity === "moderate"
+        ? "bg-yellow-100 text-yellow-700"
+        : "bg-muted text-foreground";
+  const empty =
+    result.status === "healthy"
+      ? "No visible abnormalities reported."
+      : "Not established from this image.";
   return (
-    <div className="rounded-3xl border bg-white dark:bg-zinc-900 shadow-lg p-6 space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-semibold mb-3">
-            <Leaf size={14} />
-            {result.crop}
-          </div>
-
-          <h2 className="text-2xl font-bold">
-            {result.disease}
-          </h2>
-
-          <div
-            className={`inline-flex items-center rounded-full px-3 py-1 mt-3 text-xs font-semibold ${severityColor}`}
-          >
-            {result.severity} Severity
-          </div>
+    <article
+      className="rounded-3xl border bg-white dark:bg-zinc-900 shadow-lg p-6 space-y-6 break-words"
+      aria-label="Crop assessment report"
+    >
+      <header>
+        <div className="text-xs text-muted-foreground mb-2">Crop name</div>
+        <div className="inline-flex items-center gap-2 rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-semibold mb-3">
+          <Leaf size={14} />
+          {result.cropName || "Unknown crop"}
         </div>
-
-        <div className="text-right">
-          <div className="text-sm text-gray-500">
-            {t.confidence}
+        <p className="text-xs font-medium text-muted-foreground mb-1">
+          {STATUS_LABELS[result.status]}
+        </p>
+        <h2 className="text-2xl font-bold">{result.diseaseName || STATUS_LABELS[result.status]}</h2>
+        <dl className="grid sm:grid-cols-2 gap-4 mt-4 text-sm">
+          <div>
+            <dt className="text-xs text-muted-foreground">Confidence level</dt>
+            <dd className="capitalize font-semibold mt-1">
+              {result.confidenceLevel} (qualitative)
+            </dd>
           </div>
-
-          <div className="text-3xl font-bold text-green-600">
-            {Math.round(result.confidence * 100)}%
+          <div>
+            <dt className="text-xs text-muted-foreground">Visible damage severity</dt>
+            <dd
+              className={`inline-flex rounded-full px-3 py-1 mt-1 text-xs font-semibold capitalize ${severityColor}`}
+            >
+              {result.severity}
+            </dd>
           </div>
-
-          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
-            <div
-              className="h-full bg-green-500 rounded-full"
-              style={{
-                width: `${result.confidence * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
+        </dl>
+        <p className="text-xs text-muted-foreground mt-3">
+          Confidence expresses model uncertainty; it is not a calibrated probability.
+        </p>
+      </header>
+      <section>
+        <h3 className="font-semibold text-sm mb-2">Assessment description</h3>
+        <p className="text-sm leading-relaxed">{result.description}</p>
+      </section>
       <Section
         icon={Activity}
-        title={t.symptoms}
+        title="Visible symptoms / observations"
         items={result.symptoms}
+        empty={empty}
       />
-
+      <Section
+        icon={Search}
+        title="Possible causes"
+        items={result.possibleCauses}
+        empty={result.status === "healthy" ? "No disease cause suggested." : empty}
+      />
       <Section
         icon={Pill}
-        title={t.treatment}
+        title={
+          result.status === "healthy" ? "Suggested care" : `Suggested ${t.treatment.toLowerCase()}`
+        }
         items={result.treatment}
+        empty="No treatment suggested from this image."
       />
-
       <Section
         icon={ShieldCheck}
         title={t.prevention}
         items={result.prevention}
+        empty="No preventive measures established from this image."
       />
-    </div>
+      <section className="rounded-xl bg-primary/5 p-4">
+        <h3 className="font-semibold text-sm mb-2">Final recommendation</h3>
+        <p className="text-sm">{result.recommendation}</p>
+      </section>
+      <p className="text-xs rounded-xl bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-100 p-3">
+        {result.disclaimer}
+      </p>
+    </article>
   );
 }
-
-type SectionProps = {
-  icon: React.ElementType;
-  title: string;
-  items: string[];
-};
 
 function Section({
   icon: Icon,
   title,
   items,
-}: SectionProps) {
+  empty,
+}: {
+  icon: LucideIcon;
+  title: string;
+  items: string[];
+  empty: string;
+}) {
   return (
-    <div>
+    <section>
       <div className="flex items-center gap-2 mb-3">
-        <div className="h-8 w-8 rounded-lg bg-green-100 text-green-700 flex items-center justify-center">
+        <div className="h-8 w-8 shrink-0 rounded-lg bg-green-100 text-green-700 flex items-center justify-center">
           <Icon size={16} />
         </div>
-
-        <h3 className="font-semibold text-sm uppercase tracking-wide">
-          {title}
-        </h3>
+        <h3 className="font-semibold text-sm">{title}</h3>
       </div>
-
-      <ul className="space-y-2">
-        {items.map((item, index) => (
-          <li
-            key={index}
-            className="flex gap-3 text-sm"
-          >
-            <span className="mt-2 h-2 w-2 rounded-full bg-green-500 shrink-0" />
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
+      {items.length ? (
+        <ul className="space-y-2">
+          {items.map((item, index) => (
+            <li key={index} className="flex gap-3 text-sm leading-relaxed">
+              <span className="mt-2 h-2 w-2 rounded-full bg-green-500 shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">{empty}</p>
+      )}
+    </section>
   );
 }
