@@ -35,9 +35,7 @@ export default function Dashboard() {
             {t.heroTitle}
           </h1>
 
-          <p className="mt-4 text-base sm:text-lg opacity-90 max-w-xl">
-            {t.heroSub}
-          </p>
+          <p className="mt-4 text-base sm:text-lg opacity-90 max-w-xl">{t.heroSub}</p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
@@ -61,44 +59,32 @@ export default function Dashboard() {
 
       {/* Stats */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          icon={ScanLine}
-          label={t.statsScans}
-          value="12,480"
-          trend="+18%"
-        />
+        <StatCard icon={ScanLine} label="Image input" value="Photo" trend="Upload / camera" />
         <StatCard
           icon={TrendingUp}
-          label={t.statsAccuracy}
-          value="94.6%"
-          trend="+2.1%"
+          label="Visual confidence"
+          value="Qualitative"
+          trend="No accuracy claim"
         />
         <StatCard
           icon={Users}
-          label={t.statsFarmers}
-          value="3,210"
-          trend="+312"
+          label="Crop assessment"
+          value="Multi-crop"
+          trend="When identifiable"
         />
-        <StatCard
-          icon={Leaf}
-          label={t.statsDiseases}
-          value="48"
-          trend="+5"
-        />
+        <StatCard icon={Leaf} label="Image formats" value="JPG / PNG" trend="WebP too" />
       </section>
 
       {/* Quick Actions */}
       <section>
-        <h2 className="font-display text-xl font-bold mb-4">
-          {t.quickActions}
-        </h2>
+        <h2 className="font-display text-xl font-bold mb-4">{t.quickActions}</h2>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <QuickAction
             to="/detection"
             icon={ScanLine}
             title="Diagnose a leaf"
-            desc="Upload a photo and get an instant diagnosis with treatment plan."
+            desc="Upload a photo for a preliminary visual assessment and cautious care guidance."
             color="from-primary/15 to-primary/5"
           />
 
@@ -125,22 +111,20 @@ export default function Dashboard() {
         <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
           <h2 className="font-display text-xl font-bold">{t.features}</h2>
 
-          <span className="text-xs text-muted-foreground">
-            Built for modern farms
-          </span>
+          <span className="text-xs text-muted-foreground">Built for modern farms</span>
         </div>
 
         <div className="grid md:grid-cols-3 gap-5">
           <Feature
             icon={Leaf}
             title="Disease Detection"
-            desc="Trained on 100k+ leaf images across 48 diseases and 12 crops."
+            desc="Google Gemini vision examines your uploaded crop photo and reports visible evidence and uncertainty."
           />
 
           <Feature
             icon={ShieldCheck}
-            title="Trusted Treatment"
-            desc="Recommendations validated by agricultural universities."
+            title="Suggested Care"
+            desc="Preliminary care guidance with agricultural specialist confirmation before chemical use."
           />
 
           <Feature
@@ -190,7 +174,13 @@ function QuickAction({
   title,
   desc,
   color,
-}: any) {
+}: {
+  to: string;
+  icon: typeof Leaf;
+  title: string;
+  desc: string;
+  color: string;
+}) {
   return (
     <Link
       to={to}
@@ -206,22 +196,12 @@ function QuickAction({
 
       <div className="font-display font-semibold">{title}</div>
 
-      <div className="text-xs text-muted-foreground mt-1 leading-relaxed">
-        {desc}
-      </div>
+      <div className="text-xs text-muted-foreground mt-1 leading-relaxed">{desc}</div>
     </Link>
   );
 }
 
-function Feature({
-  icon: Icon,
-  title,
-  desc,
-}: {
-  icon: typeof Leaf;
-  title: string;
-  desc: string;
-}) {
+function Feature({ icon: Icon, title, desc }: { icon: typeof Leaf; title: string; desc: string }) {
   return (
     <div className="rounded-2xl bg-muted/30 p-5">
       <div className="flex h-10 w-10 items-center justify-center rounded-xl btn-hero mb-3">
@@ -230,9 +210,7 @@ function Feature({
 
       <div className="font-display font-semibold">{title}</div>
 
-      <div className="text-sm text-muted-foreground mt-1 leading-relaxed">
-        {desc}
-      </div>
+      <div className="text-sm text-muted-foreground mt-1 leading-relaxed">{desc}</div>
     </div>
   );
 }

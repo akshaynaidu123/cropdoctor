@@ -1,5 +1,11 @@
 {
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "eslint.config.js"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "shared/**/*.js",
+    "vite.config.ts",
+    "eslint.config.js"
+  ],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
@@ -15,6 +21,7 @@
 
     /* Linting */
     "skipLibCheck": true,
+    "allowJs": true,
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
